@@ -6,6 +6,7 @@ cards_buttons = [] # buttons, indexes
 cards_values = [] # randomed values
 opened = [] # index openned cards (max = 2)
 matched = [] # index cliamed cards 
+
 # Stupid Shit
 EMOJIS = [
     "🍎", "🍌", "🍇", "🍒", "🍉", "🥝", "🍑", "🍓",
@@ -13,9 +14,10 @@ EMOJIS = [
     "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼",
     "🐨", "🐯", "🦁", "🐮", "🐷", "🐸", "🐵", "🦄"
 ]
+
 # -- Defines --
 # Change configurate button
-def on_card_click(r, c, game_frame, finish_frame, size):
+def on_card_click(r, c, game_frame, finish_frame, size, stop_timer_fn, get_seconds_fn):
     if [r, c] in opened or [r, c] in matched:
         return
 
@@ -26,7 +28,7 @@ def on_card_click(r, c, game_frame, finish_frame, size):
     opened.append([r, c])
 
     if len(opened) == 2:
-        game_frame.after(700, lambda: check_match(size, game_frame, finish_frame))
+        game_frame.after(700, lambda: check_match(size, game_frame, finish_frame, stop_timer_fn, get_seconds_fn))
 
 # This shit doing flip
 def flip_animation(btn, new_text, steps=6, delay=30):
@@ -55,7 +57,7 @@ def flip_animation(btn, new_text, steps=6, delay=30):
     shrink(0)
 
 # Check correct or not
-def check_match(size, game_frame, finish_frame):
+def check_match(size, game_frame, finish_frame, stop_timer_fn, get_seconds_fn):
     (r1, c1), (r2, c2) = opened
     if cards_values[r1][c1] == cards_values[r2][c2]:
         cards_buttons[r1][c1].configure(fg_color="green")
@@ -69,12 +71,25 @@ def check_match(size, game_frame, finish_frame):
 
     # If you win you are stupid
     if len(matched) == (size ** 2):
+        stop_timer_fn()
+        seconds_passed = get_seconds_fn()
+        minutes = seconds_passed // 60
+        secs = seconds_passed % 60
+
+        # Create label with lastest time
+        if finish_time_lbl:
+            finish_time_lbl.destroy()
+            
+        finish_time_lbl = ctk.CTkLabel(finish_frame, text=f"Time: {minutes}:{secs:02d}")
+        finish_time_lbl.grid(row=2, column=0, columnspan=size)
+
+        # Update
         game_frame.pack_forget()
         finish_frame.pack(expand=True)
 
 # Start genegate buttons aka cards
-def start_game_logic(value, game_frame, finish_frame):
-    global cards_buttons, cards_values, opened, matched
+def start_game_logic(value, game_frame, finish_frame, stop_timer_fn, get_seconds_fn): # hardcode
+    global cards_buttons, cards_values, opened, matched # this too
 
     # Clear massives
     cards_buttons = []
@@ -82,14 +97,14 @@ def start_game_logic(value, game_frame, finish_frame):
     opened = []
     matched = []
 
-    # Debug
+    # -- Debug --
     print("size:", value)
 
     # Decompine to int
     size = int(value.split("x")[0])
     pairs_count = (size ** 2) // 2
 
-    # Create pairs 4x4 -> 8 pairs
+    # Create massive with 4x4 buttons -> 8 pairs
     values_flat = (EMOJIS[:pairs_count]) * 2
     random.shuffle(values_flat)
 
@@ -109,7 +124,13 @@ def start_game_logic(value, game_frame, finish_frame):
             # Create button
             btn = ctk.CTkButton(
                     game_frame, text="?",
-                    command=lambda r=x, c=y: on_card_click(r, c, game_frame, finish_frame, size),
+                    command=lambda r=x, c=y: 
+                    on_card_click( # this hardcode i hate
+                        r, c, game_frame, 
+                        finish_frame, size, 
+                        stop_timer_fn, 
+                        get_seconds_fn
+                    ),
                     width=70, height=70
             )
             btn.grid(row=x, column=y, padx=5, pady=5)
