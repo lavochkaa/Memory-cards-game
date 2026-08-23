@@ -22,11 +22,37 @@ def on_card_click(r, c, game_frame, finish_frame, size):
     if len(opened) >= 2:
         return
     
-    cards_buttons[r][c].configure(text=str(cards_values[r][c]))
+    flip_animation(cards_buttons[r][c], str(cards_values[r][c]))
     opened.append([r, c])
 
     if len(opened) == 2:
         game_frame.after(700, lambda: check_match(size, game_frame, finish_frame))
+
+# This shit doing flip
+def flip_animation(btn, new_text, steps=6, delay=30):
+    original_width = btn.cget("width")
+
+    # Size 1 -> 0.5
+    def shrink(step):
+        if step <= steps // 2:
+            w = original_width * (1 - step / (steps // 2))
+            btn.configure(width=max(int(w), 1))
+            btn.after(delay, lambda: shrink(step + 1))
+        else:
+            btn.configure(text=new_text)
+            grow(step)
+
+    # Size 0.5 -> 1
+    def grow(step):
+        if step <= steps:
+            progress = (step - steps // 2) / (steps // 2)
+            w = original_width * progress
+            btn.configure(width=max(int(w), 1))
+            btn.after(delay, lambda: grow(step + 1))
+        else:
+            btn.configure(width=original_width)
+    
+    shrink(0)
 
 # Check correct or not
 def check_match(size, game_frame, finish_frame):
@@ -37,8 +63,8 @@ def check_match(size, game_frame, finish_frame):
         matched.append([r1, c1])
         matched.append([r2, c2])
     else:
-        cards_buttons[r1][c1].configure(text="?")
-        cards_buttons[r2][c2].configure(text="?")
+        flip_animation(cards_buttons[r1][c1], "?")
+        flip_animation(cards_buttons[r2][c2], "?")
     opened.clear()
 
     # If you win you are stupid
