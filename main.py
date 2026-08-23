@@ -42,7 +42,7 @@ def on_size_change(value_new):
 value = "4x4"
 menu_seg = ctk.CTkSegmentedButton(
     menu_frame, 
-    values=["4x4", "8x8", "16x16"],
+    values=["4x4", "6x6", "8x8"],
     command=on_size_change
 )
 
