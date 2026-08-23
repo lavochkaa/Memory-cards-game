@@ -4,7 +4,7 @@ A simple memory (matching pairs) card game built with Python and CustomTkinter.
 
 ## How it works
 
-- Pick a board size (4x4, 8x8, 16x16)
+- Pick a board size (4x4, 6x6, 8x8)
 - Click two cards to flip them
 - If they match, they stay open; if not, they flip back
 - Match all pairs to win
