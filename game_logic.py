@@ -28,7 +28,7 @@ def on_card_click(r, c, game_frame, finish_frame, size):
     if len(opened) == 2:
         game_frame.after(700, lambda: check_match(size, game_frame, finish_frame))
 
-# check correct or not
+# Check correct or not
 def check_match(size, game_frame, finish_frame):
     (r1, c1), (r2, c2) = opened
     if cards_values[r1][c1] == cards_values[r2][c2]:
@@ -44,7 +44,7 @@ def check_match(size, game_frame, finish_frame):
     # If you win you are stupid
     if len(matched) == (size ** 2):
         game_frame.pack_forget()
-        finish_frame.pack()
+        finish_frame.pack(expand=True)
 
 # Start genegate buttons aka cards
 def start_game_logic(value, game_frame, finish_frame):

@@ -4,7 +4,7 @@ from game_logic import start_game_logic
 # -- Root window --
 root = ctk.CTk()
 root.title("Memory game")
-root.geometry("900x600")
+root.geometry("900x700")
 
 # -- Frames --
 menu_frame = ctk.CTkFrame(root)
@@ -18,7 +18,7 @@ def start_game():
     for widget in game_frame.winfo_children():
         widget.destroy()
     
-    game_frame.pack()
+    game_frame.pack(expand=True)
     size = get_value()
     cards_buttons = start_game_logic(value, game_frame, finish_frame)
 
@@ -28,7 +28,7 @@ def start_game():
 def back_to_menu():
     game_frame.pack_forget()
     finish_frame.pack_forget()
-    menu_frame.pack()
+    menu_frame.pack(expand=True)
 
 def get_value():
     return int(value.split('x')[0])
@@ -65,6 +65,6 @@ finish_lbl.pack(padx=20, pady=20)
 finish_btn.pack(padx=20, pady = 20)
 
 # Start with menu frame
-menu_frame.pack() 
+menu_frame.pack(expand=True) 
 
 root.mainloop()
