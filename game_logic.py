@@ -6,7 +6,13 @@ cards_buttons = [] # buttons, indexes
 cards_values = [] # randomed values
 opened = [] # index openned cards (max = 2)
 matched = [] # index cliamed cards 
-
+# Stupid Shit
+EMOJIS = [
+    "🍎", "🍌", "🍇", "🍒", "🍉", "🥝", "🍑", "🍓",
+    "🍋", "🍊", "🍍", "🥥", "🍈", "🍏", "🥭", "🍐",
+    "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼",
+    "🐨", "🐯", "🦁", "🐮", "🐷", "🐸", "🐵", "🦄"
+]
 # -- Defines --
 # Change configurate button
 def on_card_click(r, c, game_frame, finish_frame, size):
@@ -26,10 +32,10 @@ def on_card_click(r, c, game_frame, finish_frame, size):
 def check_match(size, game_frame, finish_frame):
     (r1, c1), (r2, c2) = opened
     if cards_values[r1][c1] == cards_values[r2][c2]:
+        cards_buttons[r1][c1].configure(fg_color="green")
+        cards_buttons[r2][c2].configure(fg_color="green")
         matched.append([r1, c1])
         matched.append([r2, c2])
-        cards_buttons[r1][c1].configure(bg="green")
-        cards_buttons[r2][c2].configure(bg="green")
     else:
         cards_buttons[r1][c1].configure(text="?")
         cards_buttons[r2][c2].configure(text="?")
@@ -58,7 +64,7 @@ def start_game_logic(value, game_frame, finish_frame):
     pairs_count = (size ** 2) // 2
 
     # Create pairs 4x4 -> 8 pairs
-    values_flat = list(range(pairs_count)) * 2
+    values_flat = (EMOJIS[:pairs_count]) * 2
     random.shuffle(values_flat)
 
     # Sigmo hardcode
