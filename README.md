@@ -30,9 +30,9 @@ python main.py
 - `game_logic.py` — board generation, click handling, match checking
 
 ## TODO
-
+- [+] Rewrite to OOP
 - [ ] Online multiplayer mode
-- [ ] Proper card design (images/icons instead of numbers)
+- [+] Proper card design (images/icons instead of numbers)
 - [ ] Better UI/UX overall
 - [ ] More game modes
 
