@@ -26,6 +26,7 @@ class Card:
         self.is_open = True
         original_width = self.button.cget("width")
 
+        # Hard math, in 1 -> 0.5 -> change card
         def shrink(step):
             if step <= steps // 2:
                 w = original_width * (1 - step / (steps // 2))
@@ -35,6 +36,7 @@ class Card:
                 self.button.configure(text=self.value)
                 grow(step)
 
+        # Hard math part 2, 0.5 -> 1
         def grow(step):
             if step <= steps:
                 progress = (step - steps // 2) / (steps // 2)
@@ -127,10 +129,11 @@ class Game:
                 card = Card(val, x, y, btn)
                 self.cards.append(card)
 
+                # Create button
                 btn.configure(command=lambda c=card: self.on_click(c))
-
                 self.buttons.append(btn)
 
+                # This sigma value forever
                 index += 1
 
         # Create timer
@@ -146,7 +149,7 @@ class Game:
         self.timer_running = True
         self.start_timer()
 
-
+    # Click logic
     def on_click(self, card):
         # Check oppend or matched
         if card.is_open or card.is_matched or (len(self.opened) >= 2):
@@ -160,9 +163,12 @@ class Game:
         if len(self.opened) == 2:
             self.root.after(700, self.check_match)
 
+    # Ckeck values
     def check_match(self):
+        # Get value1, value2
         v1, v2 = self.opened
 
+        # if v1 == v2 -> cool
         if v1.value == v2.value:
             v1.mark_matched()
             v2.mark_matched()
@@ -171,22 +177,28 @@ class Game:
             v1.hide()
             v2.hide()
 
+        # Clear opened cards and close
         self.opened.clear()
 
+        # Check to win
         if self.matched_count == len(self.cards):
             self.timer_running = False
 
+            # Cahnge frame to win
             self.game_frame.pack_forget()
             self.finish_frame.pack(expand=True)
 
+    # This func starting timer
     def start_timer(self):
         if not self.timer_running:
             return
-        
+
+        # Calc time
         minutes = self.seconds_passed // 60
         secs = self.seconds_passed % 60
         self.timer_lbl.configure(text=f"Time: {minutes}:{secs:02d}")
 
+        # Recursion update
         self.seconds_passed += 1
         self.root.after(1000, self.start_timer)
 
@@ -194,13 +206,16 @@ class Game:
 def start_game():
     global current_game
 
+    # Change frame to game
     menu_frame.pack_forget()
     game_frame.pack(expand=True)
 
+    # Agruments to class
     size = get_size()
     current_game = Game(root, game_frame, finish_frame, size)
     current_game.generate_cards()
 
+# Idk how u not understand what this func do
 def back_to_menu():
     if current_game:
         current_game.timer_running = False
@@ -208,11 +223,13 @@ def back_to_menu():
     finish_frame.pack_forget()
     menu_frame.pack(expand=True)
 
+# Auto change size to button
 def change_size(new_val):
     global menu_seg_selected
 
     menu_seg_selected = new_val
 
+# Global value (string) -> Func (int)
 def get_size():
     return int(menu_seg_selected.split('x')[0])
 
@@ -251,6 +268,7 @@ menu_start_lbl.grid(row=0, column=0)
 menu_seg.grid(row=1, column=0, padx=20, pady=20)
 menu_start_btn.grid(row=2, column=0, padx=20, pady=20)
 
+# Start all logic
 if __name__ == "__main__":
     menu_frame.pack(expand=True) # Start with menu frame
     root.mainloop()
