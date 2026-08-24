@@ -2,6 +2,7 @@ import customtkinter as ctk
 import random
 
 # -- Global values --
+finish_time_lbl = None # костыль бля
 cards_buttons = [] # buttons, indexes
 cards_values = [] # randomed values
 opened = [] # index openned cards (max = 2)
@@ -58,6 +59,8 @@ def flip_animation(btn, new_text, steps=6, delay=30):
 
 # Check correct or not
 def check_match(size, game_frame, finish_frame, stop_timer_fn, get_seconds_fn):
+    global finish_time_lbl
+
     (r1, c1), (r2, c2) = opened
     if cards_values[r1][c1] == cards_values[r2][c2]:
         cards_buttons[r1][c1].configure(fg_color="green")
@@ -79,7 +82,7 @@ def check_match(size, game_frame, finish_frame, stop_timer_fn, get_seconds_fn):
         # Create label with lastest time
         if finish_time_lbl:
             finish_time_lbl.destroy()
-            
+
         finish_time_lbl = ctk.CTkLabel(finish_frame, text=f"Time: {minutes}:{secs:02d}")
         finish_time_lbl.grid(row=2, column=0, columnspan=size)
 
