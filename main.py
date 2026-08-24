@@ -134,15 +134,12 @@ class GameLogic:
         # Generate logic
         for pos_x in range(self.size):
             for pos_y in range(self.size):
-                # Get value and write
-                val = values_flat[index]
-
                 # Create button
                 btn = ctk.CTkButton(self.game_frame, text="?", width=CARD_SIZE, height=CARD_SIZE)
                 btn.grid(row=pos_x, column=pos_y, padx=BUTTON_SIZE, pady=BUTTON_SIZE)
 
                 # Create card
-                card = Card(val, pos_x, pos_y, btn)
+                card = Card(values_flat[index], pos_x, pos_y, btn)
                 self.cards.append(card)
 
                 # Create button
@@ -254,7 +251,7 @@ def start_game():
 # Idk how u not understand what this func do
 def back_to_menu():
     global current_game
-    
+
     if current_game:
         current_game.stop_timer()
         current_game = None
