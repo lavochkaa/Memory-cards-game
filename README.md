@@ -26,8 +26,7 @@ python main.py
 
 ## Project structure
 
-- `main.py` — window setup, menu, and frame switching
-- `game_logic.py` — board generation, click handling, match checking
+- `main.py` — window setup, menu, and frame switching, board generation, click handling, match checking
 
 ## TODO
 - [x] Rewrite to OOP
@@ -36,10 +35,11 @@ python main.py
 - [ ] Better UI/UX overall
 - [ ] More game modes
 
-## Some info
+## More info
 
 I coocked this demo-game without AI (im prouding myself)
 
-Короче это хардкод который работает чисто на добром слове, я не знаю, как буду это говно оптимизировать, ведь тут везде я передаю постоянно frames, size и тд, но чисто ради забавы сойдет
+UPD: щас это уже не хардкод, но все равно херня, буду дописывать до нормального состояния
+P.S. я не дизайнер и с ним будут траблы. я не хочу использовать ии, поэтому стоит что то придумать
 
 ![alt text](images/image.png)
