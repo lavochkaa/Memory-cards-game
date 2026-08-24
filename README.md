@@ -40,6 +40,7 @@ python main.py
 I coocked this demo-game without AI (im prouding myself)
 
 UPD: щас это уже не хардкод, но все равно херня, буду дописывать до нормального состояния
+
 P.S. я не дизайнер и с ним будут траблы. я не хочу использовать ии, поэтому стоит что то придумать
 
 ![alt text](images/image.png)
