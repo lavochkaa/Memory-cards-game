@@ -108,6 +108,7 @@ class GameLogic:
         self.matched_count = 0
         self.seconds_passed = 0
         self.timer_running = False
+        self.timer_if = None
 
     # Start to generate cards
     def generate_cards(self):
@@ -228,7 +229,13 @@ class GameLogic:
 
         # Recursion update
         self.seconds_passed += 1
-        self.root.after(TIMER_DELAY, self.start_timer)
+        self.timer_id = self.root.after(TIMER_DELAY, self.start_timer)
+
+    def stop_timer(self):
+        self.timer_running = False
+        if self.timer_id:
+            self.root.after_cancel(self.timer_id)
+            self.timer_id = None
 
 # -- Defines --
 def start_game():
@@ -246,7 +253,7 @@ def start_game():
 # Idk how u not understand what this func do
 def back_to_menu():
     if current_game:
-        current_game.timer_running = False
+        current_game.stop_timer()
         current_game = None
 
     # Close all frames and open main menu
