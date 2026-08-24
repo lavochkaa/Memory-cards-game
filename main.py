@@ -2,7 +2,7 @@ import customtkinter as ctk
 import random
 
 # -- Global values --
-curent_game = None
+current_game = None
 EMOJIS = [
     "🍎", "🍌", "🍇", "🍒", "🍉", "🥝", "🍑", "🍓",
     "🍋", "🍊", "🍍", "🥥", "🍈", "🍏", "🥭", "🍐",
@@ -10,7 +10,21 @@ EMOJIS = [
     "🐨", "🐯", "🦁", "🐮", "🐷", "🐸", "🐵", "🦄"
 ]
 
+# -- Constants --
+CARD_SIZE = 70
+BUTTON_SIZE = 5
+FLIP_DELAY = 30
+FLIP_STEPS = 6
+CHECK_DELAY = 700
+TIMER_DELAY = 1000
+TIMER_MIN = 60
+
 # -- Classes --
+class GameController:
+    def __init__(self):
+        # TODO - ref all UI here
+        pass
+
 class Card:
     # Basic selfs
     def __init__(self, value, row, col, button):
@@ -22,15 +36,15 @@ class Card:
         self.is_matched = False
 
     # Imitate flip to open
-    def open(self, steps=6, delay=30):
+    def open(self, steps=FLIP_STEPS, delay=FLIP_DELAY):
         self.is_open = True
         original_width = self.button.cget("width")
 
         # Hard math, in 1 -> 0.5 -> change card
         def shrink(step):
             if step <= steps // 2:
-                w = original_width * (1 - step / (steps // 2))
-                self.button.configure(width=max(int(w), 1))
+                width = original_width * (1 - step / (steps // 2))
+                self.button.configure(width=max(int(width), 1))
                 self.button.after(delay, lambda: shrink(step + 1))
             else:
                 self.button.configure(text=self.value)
@@ -40,8 +54,8 @@ class Card:
         def grow(step):
             if step <= steps:
                 progress = (step - steps // 2) / (steps // 2)
-                w = original_width * progress
-                self.button.configure(width=max(int(w), 1))
+                width = original_width * progress
+                self.button.configure(width=max(int(width), 1))
                 self.button.after(delay, lambda: grow(step + 1))
             else:
                 self.button.configure(width=original_width)
@@ -49,15 +63,15 @@ class Card:
         shrink(0)
 
     # Imitate flip to close
-    def hide(self, steps=6, delay=30):
+    def hide(self, steps=FLIP_STEPS, delay=FLIP_DELAY):
         self.is_open = False
         original_width = self.button.cget("width")
 
         # Hard math, in 1 -> 0.5 -> change card
         def shrink(step):
             if step <= steps // 2:
-                w = original_width * (1 - step / (steps // 2))
-                self.button.configure(width=max(int(w), 1))
+                width = original_width * (1 - step / (steps // 2))
+                self.button.configure(width=max(int(width), 1))
                 self.button.after(delay, lambda: shrink(step + 1))
             else:
                 self.button.configure(text="?")
@@ -67,8 +81,8 @@ class Card:
         def grow(step):
             if step <= steps:
                 progress = (step - steps // 2) / (steps // 2)
-                w = original_width * progress
-                self.button.configure(width=max(int(w), 1))
+                width = original_width * progress
+                self.button.configure(width=max(int(width), 1))
                 self.button.after(delay, lambda: grow(step + 1))
             else:
                 self.button.configure(width=original_width)
@@ -80,16 +94,17 @@ class Card:
         self.is_matched = True
         self.button.configure(fg_color="green")
 
-class Game:
+class GameLogic:
     # Basic selfs
     def __init__(self, root, game_frame, finish_frame, size):
-        self.root = root
-        self.game_frame = game_frame
-        self.finish_frame = finish_frame
+        self.root = root # ref
+        self.game_frame = game_frame # ref
+        self.finish_frame = finish_frame # ref
         self.size = size
         self.cards = []
         self.opened = []
-        self.buttons = []
+        self.buttons = [] # ref
+        self.clicks = 0
         self.matched_count = 0
         self.seconds_passed = 0
         self.timer_running = False
@@ -116,17 +131,17 @@ class Game:
         index = 0
 
         # Generate logic
-        for x in range(self.size):
-            for y in range(self.size):
+        for pos_x in range(self.size):
+            for pos_y in range(self.size):
                 # Get value and write
                 val = values_flat[index]
 
                 # Create button
-                btn = ctk.CTkButton(self.game_frame, text="?", width=70, height=70)
-                btn.grid(row=x, column=y, padx=5, pady=5)
+                btn = ctk.CTkButton(self.game_frame, text="?", width=CARD_SIZE, height=CARD_SIZE)
+                btn.grid(row=pos_x, column=pos_y, padx=BUTTON_SIZE, pady=BUTTON_SIZE)
 
                 # Create card
-                card = Card(val, x, y, btn)
+                card = Card(val, pos_x, pos_y, btn)
                 self.cards.append(card)
 
                 # Create button
@@ -140,9 +155,13 @@ class Game:
         self.timer_lbl = ctk.CTkLabel(self.game_frame, text="Time: 0:00")
         self.timer_lbl.grid(row=self.size, column=0, columnspan=self.size, pady=(10, 0))
 
+        # Create clicks counter
+        self.clicks_lbl = ctk.CTkLabel(self.game_frame, text="Clicks: 0")
+        self.clicks_lbl.grid(row=self.size + 1, column=0, columnspan=self.size, pady=(10, 0))
+
         # Create "Back" button
         game_back_btn = ctk.CTkButton(self.game_frame, text="Back", command=back_to_menu)
-        game_back_btn.grid(row=self.size + 1, column=0, columnspan=self.size, pady=10)
+        game_back_btn.grid(row=self.size + 2, column=0, columnspan=self.size, pady=(10, 0))
 
         # Start timer
         self.seconds_passed = 0
@@ -159,23 +178,26 @@ class Game:
         card.open()
         self.opened.append(card)
 
+        self.clicks += 1
+        self.clicks_lbl.configure(text=f"Clicks: {self.clicks}")
+
         # If two cards flipped -> check T / F
         if len(self.opened) == 2:
-            self.root.after(700, self.check_match)
+            self.root.after(CHECK_DELAY, self.check_match)
 
     # Ckeck values
     def check_match(self):
         # Get value1, value2
-        v1, v2 = self.opened
+        first_card, second_card = self.opened
 
-        # if v1 == v2 -> cool
-        if v1.value == v2.value:
-            v1.mark_matched()
-            v2.mark_matched()
+        # if first_card == second_card -> cool
+        if first_card.value == second_card.value:
+            first_card.mark_matched()
+            second_card.mark_matched()
             self.matched_count += 2
         else:
-            v1.hide()
-            v2.hide()
+            first_card.hide()
+            second_card.hide()
 
         # Clear opened cards and close
         self.opened.clear()
@@ -183,6 +205,12 @@ class Game:
         # Check to win
         if self.matched_count == len(self.cards):
             self.timer_running = False
+
+            minutes = self.seconds_passed // TIMER_MIN
+            seconds = self.seconds_passed % TIMER_MIN
+
+            # Update values 
+            finish_main_lbl.configure(text=f"You are stupid guy !\n\nTime: {minutes}:{seconds:02d}\nClicks: {self.clicks}")
 
             # Cahnge frame to win
             self.game_frame.pack_forget()
@@ -194,13 +222,13 @@ class Game:
             return
 
         # Calc time
-        minutes = self.seconds_passed // 60
-        secs = self.seconds_passed % 60
+        minutes = self.seconds_passed // TIMER_MIN
+        secs = self.seconds_passed % TIMER_MIN
         self.timer_lbl.configure(text=f"Time: {minutes}:{secs:02d}")
 
         # Recursion update
         self.seconds_passed += 1
-        self.root.after(1000, self.start_timer)
+        self.root.after(TIMER_DELAY, self.start_timer)
 
 # -- Defines --
 def start_game():
@@ -212,13 +240,16 @@ def start_game():
 
     # Agruments to class
     size = get_size()
-    current_game = Game(root, game_frame, finish_frame, size)
+    current_game = GameLogic(root, game_frame, finish_frame, size)
     current_game.generate_cards()
 
 # Idk how u not understand what this func do
 def back_to_menu():
     if current_game:
         current_game.timer_running = False
+        current_game = None
+
+    # Close all frames and open main menu
     game_frame.pack_forget()
     finish_frame.pack_forget()
     menu_frame.pack(expand=True)
@@ -255,15 +286,15 @@ menu_seg.set("4x4")
 
 # -- Labels --
 menu_start_lbl = ctk.CTkLabel(menu_frame, text="Pick range buttons")
-finish_lbl = ctk.CTkLabel(finish_frame, text="You are stupid guy !")
+finish_main_lbl = ctk.CTkLabel(finish_frame, text="You are stupid guy !\nTime:\nClicks:")
 
 # -- Buttons --
 menu_start_btn = ctk.CTkButton(menu_frame, text="Start", command=start_game)
 finish_btn = ctk.CTkButton(finish_frame, text="Back", command=back_to_menu)
 
 # -- Packs --
-finish_lbl.grid(row=1,padx=20, pady=20)
-finish_btn.grid(row=3, padx=20, pady = 20)
+finish_main_lbl.grid(padx=20, pady=20)
+finish_btn.grid(padx=20, pady = 20)
 menu_start_lbl.grid(row=0, column=0)
 menu_seg.grid(row=1, column=0, padx=20, pady=20)
 menu_start_btn.grid(row=2, column=0, padx=20, pady=20)
