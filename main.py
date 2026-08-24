@@ -33,10 +33,6 @@ class Card:
         self.is_open = False
         self.is_matched = False
 
-    # If pair -> green
-    def mark_matched(self):
-        self.is_matched = True
-
 class GameController:
     # -- Inits --
     def __init__(self, root):
@@ -49,8 +45,10 @@ class GameController:
 
         # -- Values --
         self.game_logic = None
+        self.timer_after_id = None
         self.selected_size = "4x4"
         self.buttons = []
+        self.animation_after_ids = []
 
         # -- Atributs --
         self._build_menu_ui()
@@ -59,6 +57,9 @@ class GameController:
 
     # Start game
     def start_game(self):
+        # Clear pids
+        self._cancel_pending_callbacks()
+
         # Size to int value
         size = int(self.selected_size.split('x')[0])
 
@@ -71,23 +72,23 @@ class GameController:
         self._update_timer()
         self._show_game()
 
+    # Hide all frames, show only the given one
+    def _switch_frame(self, frame):
+        for f in (self.menu_frame, self.game_frame, self.finish_frame):
+            f.pack_forget()
+        frame.pack(expand=True)
+
     # Close all and open menu
     def _show_menu(self):
-        self.game_frame.pack_forget()
-        self.finish_frame.pack_forget()
-        self.menu_frame.pack(expand=True)
+        self._switch_frame(self.menu_frame)
 
     # Close all and open gmae
     def _show_game(self):
-        self.menu_frame.pack_forget()
-        self.finish_frame.pack_forget()
-        self.game_frame.pack(expand=True)
+        self._switch_frame(self.game_frame)
 
     # Close all and open finish
     def _show_finish(self):
-        self.menu_frame.pack_forget()
-        self.game_frame.pack_forget()
-        self.finish_frame.pack(expand=True)
+        self._switch_frame(self.finish_frame)
 
     # Create main menu
     def _build_menu_ui(self):
@@ -150,10 +151,14 @@ class GameController:
         finish_back_btn = ctk.CTkButton(self.finish_frame, text="Back", command=self.back_to_menu)
         finish_back_btn.grid(row=1, column=0, padx=BUTTON_SIZE, pady=BUTTON_SIZE)
 
+    # Row/col -> flat index
+    def _card_index(self, row, col):
+        return row * self.game_logic.size + col
+
     # Check logic in GameLogic
     def on_card_click(self, row, col):
         # Indexing
-        idx = row * self.game_logic.size + col
+        idx = self._card_index(row, col)
         card = self.game_logic.cards[idx]
 
         # Open button
@@ -182,7 +187,8 @@ class GameController:
             if step <= steps // 2:
                 width = original_width * (1 - step / (steps // 2))
                 btn.configure(width=max(int(width), 1))
-                self.root.after(delay, lambda: shrink(step + 1))
+                aid = self.root.after(delay, lambda: shrink(step + 1))
+                self.animation_after_ids.append(aid)
             else:
                 btn.configure(text=new_text)
                 grow(step)
@@ -193,7 +199,8 @@ class GameController:
                 progress = (step - steps // 2) / (steps // 2)
                 width = original_width * progress
                 btn.configure(width=max(int(width), 1))
-                self.root.after(delay, lambda: grow(step + 1))
+                aid = self.root.after(delay, lambda: grow(step + 1))
+                self.animation_after_ids.append(aid)
             else:
                 btn.configure(width=original_width)
 
@@ -206,7 +213,7 @@ class GameController:
 
         # Get first and second
         for card in(result["first_card"], result["second_card"]):
-            idx = card.row * self.game_logic.size + card.col
+            idx = self._card_index(card.row, card.col)
             btn = self.buttons[idx]
             if result["is_match"]:
                 # Change bg color if True
@@ -221,9 +228,8 @@ class GameController:
     # UI update timer
     def _update_timer(self):
         # if false or false -> Stop
-        if not self.game_logic or not \
-            self.game_logic.timer_running:
-                return
+        if not self.game_logic or not self.game_logic.timer_running:
+            return
         
         # Get lact tick
         self.game_logic.tick()
@@ -233,11 +239,12 @@ class GameController:
 
         # Change timer in the last time
         self.game_timer_lbl.configure(text=f"Time: {minutes}:{seconds:02d}")
-        self.root.after(TIMER_DELAY, self._update_timer)
+        self.timer_after_id = self.root.after(TIMER_DELAY, self._update_timer)
 
     # Stop logic
     def finish_game(self):
-        # Stop timer
+        # Stop processes
+        self._cancel_pending_callbacks()
         self.game_logic.stop_timer()
 
         # Get min and sec to change in finish
@@ -251,9 +258,22 @@ class GameController:
         # Show finish Ui
         self._show_finish()
 
+    # Stop all logics
+    def _cancel_pending_callbacks(self):
+        # Check IDs
+        if self.timer_after_id:
+            self.root.after_cancel(self.timer_after_id)
+            self.timer_after_id = None
+
+        # For pid close
+        for aid in self.animation_after_ids:
+            self.root.after_cancel(aid)
+        self.animation_after_ids.clear()
+
     # Logic back to menu
     def back_to_menu(self):
-        # Stop timer
+        # Stop processes
+        self._cancel_pending_callbacks()
         if self.game_logic:
             self.game_logic.stop_timer()
 
@@ -281,7 +301,6 @@ class GameLogic:
         self.clicks = 0
         self.matched_count = 0
         self.seconds_passed = 0
-        self.timer_id = None
 
         # -- Flags --
         self.timer_running = False
