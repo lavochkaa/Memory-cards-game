@@ -236,7 +236,7 @@ def get_size():
 # -- Root window --
 root = ctk.CTk()
 root.title("Memory game")
-root.geometry("900x700")
+root.geometry("900x800")
 
 # -- Frames --
 menu_frame = ctk.CTkFrame(root)
