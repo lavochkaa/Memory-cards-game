@@ -231,6 +231,7 @@ class GameLogic:
         self.seconds_passed += 1
         self.timer_id = self.root.after(TIMER_DELAY, self.start_timer)
 
+    # Stop timer and kill if timer exist
     def stop_timer(self):
         self.timer_running = False
         if self.timer_id:
@@ -252,6 +253,8 @@ def start_game():
 
 # Idk how u not understand what this func do
 def back_to_menu():
+    global current_game
+    
     if current_game:
         current_game.stop_timer()
         current_game = None
