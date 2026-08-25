@@ -26,7 +26,10 @@ python main.py
 
 ## Project structure
 
-- `main.py` — window setup, menu, and frame switching, board generation, click handling, match checking
+- `main.py` — start
+- `game_logic.py` - board generation, click handling, match checking
+- `game_controller.py` - window setup, menu, and frame switching
+- `models.py` - card selfs, (Users class) etc..
 
 ## TODO
 - [x] Rewrite to OOP
