@@ -53,12 +53,6 @@ class GameController:
         self._update_timer()
         self._show_game()
 
-    # Hide all frames, show only the given one
-    def _switch_frame(self, frame):
-        for f in (self.menu_frame, self.game_frame, self.finish_frame):
-            f.pack_forget()
-        frame.pack(expand=True)
-
     # Close all and open menu
     def _show_menu(self):
         self._switch_frame(self.menu_frame)
@@ -128,10 +122,6 @@ class GameController:
         game_back_btn = ctk.CTkButton(self.game_frame, text="Back", command=self.back_to_menu)
         game_back_btn.grid(row=size + 3, column=0, columnspan=size, pady=(10, 0))
 
-    # Update label score, streak
-    def _update_score(self, result):
-        self.game_score_lbl.configure(text=f"Score: {result["score"]}, Streak: {result["streak"]}")
-
     # Create finish UI
     def _build_finish_ui(self):
         # -- Labels --
@@ -141,10 +131,6 @@ class GameController:
         # -- Buttons --
         finish_back_btn = ctk.CTkButton(self.finish_frame, text="Back", command=self.back_to_menu)
         finish_back_btn.grid(row=1, column=0, padx=BUTTON_SIZE, pady=BUTTON_SIZE)
-
-    # Row/col -> flat index
-    def _card_index(self, row, col):
-        return row * self.game_logic.size + col
 
     # Check logic in GameLogic
     def on_card_click(self, row, col):
@@ -232,6 +218,18 @@ class GameController:
         self.game_timer_lbl.configure(text=f"Time: {minutes}:{seconds:02d}")
         self.timer_after_id = self.root.after(TIMER_DELAY, self._update_timer)
 
+    # Stop all logics
+    def _cancel_pending_callbacks(self):
+        # Check IDs
+        if self.timer_after_id:
+            self.root.after_cancel(self.timer_after_id)
+            self.timer_after_id = None
+
+        # For pid close
+        for aid in self.animation_after_ids:
+            self.root.after_cancel(aid)
+        self.animation_after_ids.clear()
+
     # Stop logic
     def finish_game(self, result):
         # Stop processes
@@ -249,18 +247,6 @@ class GameController:
         # Show finish Ui
         self._show_finish()
 
-    # Stop all logics
-    def _cancel_pending_callbacks(self):
-        # Check IDs
-        if self.timer_after_id:
-            self.root.after_cancel(self.timer_after_id)
-            self.timer_after_id = None
-
-        # For pid close
-        for aid in self.animation_after_ids:
-            self.root.after_cancel(aid)
-        self.animation_after_ids.clear()
-
     # Logic back to menu
     def back_to_menu(self):
         # Stop processes
@@ -274,6 +260,20 @@ class GameController:
         # Change Ui to menu
         self._show_menu()
 
+    # Hide all frames, show only the given one
+    def _switch_frame(self, frame):
+        for f in (self.menu_frame, self.game_frame, self.finish_frame):
+            f.pack_forget()
+        frame.pack(expand=True)
+
     # Logic changing size place
     def _on_size_change(self, value):
         self.selected_size = value
+
+    # Row/col -> flat index
+    def _card_index(self, row, col):
+        return row * self.game_logic.size + col
+
+    # Update label score, streak
+    def _update_score(self, result):
+        self.game_score_lbl.configure(text=f"Score: {result["score"]}, Streak: {result["streak"]}")
