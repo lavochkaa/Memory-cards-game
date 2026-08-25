@@ -10,9 +10,11 @@ EMOJIS = [
 ]
 
 # -- Constants --
+POINTS_MATCH = 10
 LABEL_SIZE = 20
 SEGMENT_SIZE = 20
 CARD_SIZE = 70
+MENU_BUTTON_SIZE = 20
 BUTTON_SIZE = 5
 FLIP_DELAY = 30
 FLIP_STEPS = 6
@@ -92,22 +94,24 @@ class GameController:
 
     # Create main menu
     def _build_menu_ui(self):
+        self.menu_frame.grid_columnconfigure(0, weight=1)
+
         # -- Labels --
         menu_main_lbl = ctk.CTkLabel(self.menu_frame, text="Select range buttons")
-        menu_main_lbl.grid(row=0, column=0, padx=LABEL_SIZE, pady=LABEL_SIZE)
+        menu_main_lbl.grid(row=0, column=0, padx=LABEL_SIZE, pady=LABEL_SIZE, sticky="ew")
 
         # -- Segments --
         menu_range_seg = ctk.CTkSegmentedButton(
-            self.menu_frame, 
+            self.menu_frame,
             values=["4x4", "6x6", "8x8"],
             command=self._on_size_change
         )
         menu_range_seg.set(self.selected_size)
-        menu_range_seg.grid(row=1, column=0, padx=SEGMENT_SIZE, pady=SEGMENT_SIZE)
+        menu_range_seg.grid(row=1, column=0, padx=SEGMENT_SIZE, pady=SEGMENT_SIZE, sticky="ew")
 
         # -- Buttons --
         menu_start_btn = ctk.CTkButton(self.menu_frame, text="Start", command=self.start_game)
-        menu_start_btn.grid(row=2, column=0, padx=BUTTON_SIZE, pady=BUTTON_SIZE)
+        menu_start_btn.grid(row=2, column=0, padx=MENU_BUTTON_SIZE, pady=MENU_BUTTON_SIZE, sticky="ew")
 
     # Build only widgets
     def _build_game_ui(self, size):
@@ -137,9 +141,17 @@ class GameController:
         self.game_clicks_lbl = ctk.CTkLabel(self.game_frame, text="Clicks: 0")
         self.game_clicks_lbl.grid(row=size + 1, column=0, columnspan=size, pady=(10, 0))
 
+        # Score counter
+        self.game_score_lbl = ctk.CTkLabel(self.game_frame, text="Score: 0, Streak: 0")
+        self.game_score_lbl.grid(row=size + 2, column=0, columnspan=size, pady=(10, 0))
+
         # Back button
         game_back_btn = ctk.CTkButton(self.game_frame, text="Back", command=self.back_to_menu)
-        game_back_btn.grid(row=size + 2, column=0, columnspan=size, pady=(10, 0))
+        game_back_btn.grid(row=size + 3, column=0, columnspan=size, pady=(10, 0))
+
+    # Update label score, streak
+    def _update_score(self, result):
+        self.game_score_lbl.configure(text=f"Score: {result["score"]}, Streak: {result["streak"]}")
 
     # Create finish UI
     def _build_finish_ui(self):
@@ -210,7 +222,7 @@ class GameController:
     def _resolve_check(self):
         # Get return in check_match
         result = self.game_logic.check_match()
-
+        self._update_score(result)
         # Get first and second
         for card in(result["first_card"], result["second_card"]):
             idx = self._card_index(card.row, card.col)
@@ -223,7 +235,7 @@ class GameController:
 
         # Check to win
         if result["game_won"]:
-            self.finish_game()
+            self.finish_game(result)
 
     # UI update timer
     def _update_timer(self):
@@ -242,7 +254,7 @@ class GameController:
         self.timer_after_id = self.root.after(TIMER_DELAY, self._update_timer)
 
     # Stop logic
-    def finish_game(self):
+    def finish_game(self, result):
         # Stop processes
         self._cancel_pending_callbacks()
         self.game_logic.stop_timer()
@@ -252,7 +264,7 @@ class GameController:
 
         # Cange finish label
         self.finish_main_lbl.configure(
-            text=f"You are stupid guy!\n\nTime: {minutes}:{seconds:02d}\nClicks: {self.game_logic.clicks}"
+            text=f"You are stupid guy!\n\nTime: {minutes}:{seconds:02d}\nClicks: {self.game_logic.clicks}\nScore: {result["score"]}"
         )
 
         # Show finish Ui
@@ -301,6 +313,8 @@ class GameLogic:
         self.clicks = 0
         self.matched_count = 0
         self.seconds_passed = 0
+        self.score = 0
+        self.streak = 0
 
         # -- Flags --
         self.timer_running = False
@@ -353,13 +367,19 @@ class GameLogic:
         is_match = first_card.value == second_card.value
 
         # if first_card == second_card -> cool
+        graind = 0
         if is_match:
             first_card.is_matched = True
             second_card.is_matched = True
             self.matched_count += 2
+
+            self.streak += 1
+            graind = POINTS_MATCH * self.streak
+            self.score += graind
         else:
             first_card.is_open = False
             second_card.is_open = False
+            self.streak = 0
 
         # Clear opened cards and close
         self.opened.clear()
@@ -370,6 +390,8 @@ class GameLogic:
             "first_card": first_card,
             "second_card": second_card,
             "game_won": self.matched_count == len(self.cards),
+            "score": self.score,
+            "streak": self.streak,
         }
 
     # Advance the clock by one second
