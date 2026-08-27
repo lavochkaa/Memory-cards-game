@@ -115,7 +115,7 @@ class GameController:
         self.game_clicks_lbl.grid(row=size + 1, column=0, columnspan=size, pady=(10, 0))
 
         # Score counter
-        self.game_score_lbl = ctk.CTkLabel(self.game_frame, text="Score: 0, Streak: 0")
+        self.game_score_lbl = ctk.CTkLabel(self.game_frame, text="Score: 0 - Streak: 0")
         self.game_score_lbl.grid(row=size + 2, column=0, columnspan=size, pady=(10, 0))
 
         # Back button
@@ -276,4 +276,4 @@ class GameController:
 
     # Update label score, streak
     def _update_score(self, result):
-        self.game_score_lbl.configure(text=f"Score: {result["score"]}, Streak: {result["streak"]}")
+        self.game_score_lbl.configure(text=f"Score: {result["score"]} - Streak: {result["streak"]}")
