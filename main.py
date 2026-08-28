@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from game_controller import GameController
+from client.game_controller import GameController
 
 # Start all logic
 if __name__ == "__main__":
