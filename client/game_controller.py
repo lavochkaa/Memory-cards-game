@@ -49,12 +49,13 @@ class GameController:
         # Size to int value
         size = int(self.selected_size.split('x')[0])
 
-        # Start logic
+        # Get players
         self.players = [
             Player(User(self.username)),
             Player(User("User2"))
         ]
 
+        # Start logic
         self.room = Room(size, self.players)
         self.game_logic = self.room.game_logic
         self.game_logic.generate_cards()
@@ -64,6 +65,7 @@ class GameController:
         self._update_timer()
         self._show_game()
 
+    # Show login frame
     def _show_login(self):
         self._switch_frame(self.login_frame)
 
@@ -71,6 +73,7 @@ class GameController:
     def _show_menu(self):
         self._switch_frame(self.menu_frame)
 
+    # Show waiting frame
     def _show_waiting(self):
         self._switch_frame(self.waiting_frame)
 
@@ -82,7 +85,9 @@ class GameController:
     def _show_finish(self):
         self._switch_frame(self.finish_frame)
 
+    # Create login ui
     def _build_login_ui(self):
+        # Config frame
         self.login_frame.grid_columnconfigure(0, weight=1)
 
         # -- Labels --
@@ -99,6 +104,7 @@ class GameController:
 
     # Create main menu
     def _build_menu_ui(self):
+        # Config frame
         self.menu_frame.grid_columnconfigure(0, weight=1)
 
         # -- Labels --
@@ -119,6 +125,7 @@ class GameController:
         menu_start_btn.grid(row=2, column=0, padx=MENU_BUTTON_SIZE, pady=MENU_BUTTON_SIZE, sticky="ew")
 
     def _build_waiting_ui(self):
+        # Config frame
         self.waiting_frame.grid_columnconfigure(0, weight=1)
 
         # -- Labels --
@@ -137,20 +144,24 @@ class GameController:
         
         self.buttons.clear()
 
+        # Config game frames
         self.game_frame.grid_columnconfigure(0, weight=1)
         self.game_frame.grid_columnconfigure(1, weight=0)
         self.game_frame.grid_columnconfigure(2, weight=1)
         self.game_frame.grid_rowconfigure(0, weight=1)
 
+        # Create user1 frame stats
         self.left_user_frame = ctk.CTkFrame(self.game_frame)
         self.left_user_frame.grid(row=0, column=0, sticky="nw", padx=20, pady=20)
 
-        self.board_frame = ctk.CTkFrame(self.game_frame)
-        self.board_frame.grid(row=0, column=1, padx=20, pady=20)
-
+        # Create user2 frame stats
         self.right_user_frame = ctk.CTkFrame(self.game_frame)
         self.right_user_frame.grid(row=0, column=2, sticky="ne", padx=20, pady=20)
 
+        # Create game board 
+        self.board_frame = ctk.CTkFrame(self.game_frame)
+        self.board_frame.grid(row=0, column=1, padx=20, pady=20)
+        
         # Create buttons
         for row in range(size):
             for col in range(size):
@@ -171,10 +182,11 @@ class GameController:
         self.game_current_turn_lbl = ctk.CTkLabel(self.board_frame, text=f"Turn: {player1.user.username}")
         self.game_current_turn_lbl.grid(row=size + 1, column=0, columnspan=size, pady=(10, 0))
 
-        # Users status
+        # User1 status
         self.game_player1_lbl = ctk.CTkLabel(self.left_user_frame, text=f"{player1.user.username}\n- Score: 0\n- Streak: 0\n- Clicks: 0")
         self.game_player1_lbl.pack(padx=15, pady=15)
-        
+
+        # User2 status
         self.game_player2_lbl = ctk.CTkLabel(self.right_user_frame, text=f"{player2.user.username}\n- Score: 0\n- Streak: 0\n- Clicks: 0")
         self.game_player2_lbl.pack(padx=15, pady=15)
 
@@ -206,7 +218,7 @@ class GameController:
         # Flip animation
         self._animate_flip(idx, card.value)
 
-        # Clicks update
+        # Info update
         self._update_players_info()
 
         # Check first_card == second_cars
@@ -298,8 +310,11 @@ class GameController:
 
         # Check winner
         winner = self.game_logic.get_winner()
+
+        # Get minutes, seconds
         minutes, seconds = divmod(self.game_logic.seconds_passed, TIMER_MIN)
 
+        # Generate finish label
         if winner is None:
             finish_text = (
                 "DRAW!\n\n"
@@ -364,21 +379,25 @@ class GameController:
         player2 = self.game_logic.players[1]
         current_player = self.game_logic.current_player()
 
+        # Runtime update turn
         self.game_current_turn_lbl.configure(text=f"Turn: {current_player.user.username}")
 
+        # Runtime update statics for player1
         self.game_player1_lbl.configure(
             text=f"{player1.user.username}\n- Score: {player1.score}\n- Streak: {player1.streak}\n- Clicks: {player1.clicks}"
         )
-
+        # Runtime update statics for player2
         self.game_player2_lbl.configure(
             text=f"{player2.user.username}\n- Score: {player2.score}\n- Streak: {player2.streak}\n- Clicks: {player2.clicks}"
         )
 
+    # Command button to join in waiting room
     def join_room(self):
         self._show_waiting()
         # TODO - server GET
         self.root.after(TIMER_DELAY * 3, self.start_game)
 
+    # In login get username
     def login(self):
         self.username = self.login_input_etr.get()
 

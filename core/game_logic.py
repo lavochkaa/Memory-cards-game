@@ -117,12 +117,15 @@ class GameLogic:
     def stop_timer(self):
         self.timer_running = False
 
+    # Get current player
     def current_player(self):
         return self.players[self.current_player_id]
 
+    # P1 -> P2 -> P1..
     def switch_turn(self):
         self.current_player_id = 1 - self.current_player_id
 
+    # Whos winner?
     def get_winner(self):
         player1 = self.players[0]
         player2 = self.players[1]
