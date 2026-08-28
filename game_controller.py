@@ -94,11 +94,25 @@ class GameController:
         
         self.buttons.clear()
 
+        self.game_frame.grid_columnconfigure(0, weight=1)
+        self.game_frame.grid_columnconfigure(1, weight=0)
+        self.game_frame.grid_columnconfigure(2, weight=1)
+        self.game_frame.grid_rowconfigure(0, weight=1)
+
+        self.left_user_frame = ctk.CTkFrame(self.game_frame)
+        self.left_user_frame.grid(row=0, column=0, sticky="nw", padx=20, pady=20)
+
+        self.board_frame = ctk.CTkFrame(self.game_frame)
+        self.board_frame.grid(row=0, column=1, padx=20, pady=20)
+
+        self.right_user_frame = ctk.CTkFrame(self.game_frame)
+        self.right_user_frame.grid(row=0, column=2, sticky="ne", padx=20, pady=20)
+
         # Create buttons
         for row in range(size):
             for col in range(size):
                 btn = ctk.CTkButton(
-                    self.game_frame,
+                    self.board_frame,
                     text="?",
                     width=CARD_SIZE,
                     height=CARD_SIZE,
@@ -107,20 +121,23 @@ class GameController:
                 self.buttons.append(btn)
 
         # Timer
-        self.game_timer_lbl = ctk.CTkLabel(self.game_frame, text="Time: 0:00")
+        self.game_timer_lbl = ctk.CTkLabel(self.board_frame, text="Time: 0:00")
         self.game_timer_lbl.grid(row=size, column=0, columnspan=size, pady=(10, 0))
 
-        # Click counter
-        self.game_clicks_lbl = ctk.CTkLabel(self.game_frame, text="Clicks: 0")
-        self.game_clicks_lbl.grid(row=size + 1, column=0, columnspan=size, pady=(10, 0))
+        # Turn label
+        self.game_current_turn_lbl = ctk.CTkLabel(self.board_frame, text=f"Turn: User1")
+        self.game_current_turn_lbl.grid(row=size + 1, column=0, columnspan=size, pady=(10, 0))
 
-        # Score counter
-        self.game_score_lbl = ctk.CTkLabel(self.game_frame, text="Score: 0 - Streak: 0")
-        self.game_score_lbl.grid(row=size + 2, column=0, columnspan=size, pady=(10, 0))
+        # Users status
+        self.game_user1_lbl = ctk.CTkLabel(self.right_user_frame, text="User1\n- Score: 0\n- Streak: 0\n- Clicks: 0")
+        self.game_user1_lbl.pack(padx=15, pady=15)
+        
+        self.game_user2_lbl = ctk.CTkLabel(self.left_user_frame, text="User2\n- Score: 0\n- Streak: 0\n- Clicks: 0")
+        self.game_user2_lbl.pack(padx=15, pady=15)
 
         # Back button
-        game_back_btn = ctk.CTkButton(self.game_frame, text="Back", command=self.back_to_menu)
-        game_back_btn.grid(row=size + 3, column=0, columnspan=size, pady=(10, 0))
+        game_back_btn = ctk.CTkButton(self.board_frame, text="Back", command=self.back_to_menu)
+        game_back_btn.grid(row=size + 4, column=0, columnspan=size, pady=(10, 0))
 
     # Create finish UI
     def _build_finish_ui(self):
@@ -147,7 +164,7 @@ class GameController:
         self._animate_flip(idx, card.value)
 
         # Clicks update
-        self.game_clicks_lbl.configure(text=f"Clicks: {self.game_logic.clicks}")
+        self._update_users_info()
 
         # Check first_card == second_cars
         if len(self.game_logic.opened) == 2:
@@ -187,7 +204,7 @@ class GameController:
     def _resolve_check(self):
         # Get return in check_match
         result = self.game_logic.check_match()
-        self._update_score(result)
+        self._update_users_info()
         # Get first and second
         for card in(result["first_card"], result["second_card"]):
             idx = self._card_index(card.row, card.col)
@@ -200,7 +217,7 @@ class GameController:
 
         # Check to win
         if result["game_won"]:
-            self.finish_game(result)
+            self.finish_game()
 
     # UI update timer
     def _update_timer(self):
@@ -231,18 +248,16 @@ class GameController:
         self.animation_after_ids.clear()
 
     # Stop logic
-    def finish_game(self, result):
+    def finish_game(self):
         # Stop processes
         self._cancel_pending_callbacks()
         self.game_logic.stop_timer()
 
-        # Get min and sec to change in finish
-        minutes, seconds = divmod(self.game_logic.seconds_passed, TIMER_MIN)
+        # Check winner
+        finish_text = self.game_logic.get_winner()
 
         # Cange finish label
-        self.finish_main_lbl.configure(
-            text=f"You are stupid guy!\n\nTime: {minutes}:{seconds:02d}\nClicks: {self.game_logic.clicks}\nScore: {result["score"]}"
-        )
+        self.finish_main_lbl.configure(text=finish_text)
 
         # Show finish Ui
         self._show_finish()
@@ -264,7 +279,10 @@ class GameController:
     def _switch_frame(self, frame):
         for f in (self.menu_frame, self.game_frame, self.finish_frame):
             f.pack_forget()
-        frame.pack(expand=True)
+        if frame == self.game_frame:
+            frame.pack(fill="both", expand=True)
+        else:
+            frame.pack(expand=True)
 
     # Logic changing size place
     def _on_size_change(self, value):
@@ -274,6 +292,21 @@ class GameController:
     def _card_index(self, row, col):
         return row * self.game_logic.size + col
 
-    # Update label score, streak
-    def _update_score(self, result):
-        self.game_score_lbl.configure(text=f"Score: {result["score"]} - Streak: {result["streak"]}")
+    def _update_users_info(self):
+        # -- Users --
+        user1 = self.game_logic.users[0]
+        user2 = self.game_logic.users[1]
+        current_user = self.game_logic.current_user()
+
+        self.game_current_turn_lbl.configure(text=f"Turn: {current_user.name}")
+
+        self.game_user1_lbl.configure(
+            text=f"{user1.name}\n- Score: {user1.score}\n- Streak: {user1.streak}\n- Clicks: {user1.clicks}"
+        )
+
+        self.game_user2_lbl.configure(
+            text=f"{user2.name}\n- Score: {user2.score}\n- Streak: {user2.streak}\n- Clicks: {user2.clicks}"
+        )
+
+
+        
