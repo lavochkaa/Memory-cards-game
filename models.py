@@ -12,16 +12,17 @@ class Card:
         self.is_open = False
         self.is_matched = False
 
-
 class User:
-    # -- Inits __
-    def __init__(self, name):
-        self.name = name
+    # -- Inits --
+    def __init__(self, username):
+        self.username = username
+        self.global_score = 0
+        self.game_played = 0
+        self.wins = 0
+
+class Player:
+    def __init__(self, user):
+        self.user = user
         self.clicks = 0
         self.score = 0
         self.streak = 0
-
-# TODO - multiplayer room 
-class Room:
-    def __init__(self):
-        pass
