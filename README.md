@@ -29,7 +29,7 @@ python main.py
 - `main.py` — start
 - `game_logic.py` - board generation, click handling, match checking
 - `game_controller.py` - window setup, menu, and frame switching
-- `models.py` - card selfs, (Users class) etc..
+- `models.py` - card selfs, Users class, TODO - Room
 
 ## TODO
 - [x] Rewrite to OOP
@@ -42,7 +42,7 @@ python main.py
 
 I coocked this demo-game without AI (im prouding myself)
 
-UPD4: Начал перестройку СССР под P2P, обавил логику топорную. Если щас не в лом будет, то обновлю уже до полноценного P2P, у меня как раз завалялся один VPS, поэтому игра станет бесплатной, с онлайном, но на небольшое врем ~неделя.
+UPD4: Начал перестройку СССР под P2P, обавил логику топорную. Если щас не в лом будет, то обновлю уже до полноценного P2P, у меня как раз завалялся один VPS, поэтому игра станет бесплатной, с онлайном, но на небольшое время (~неделя).
 
 P.S. я не дизайнер и с ним будут траблы. я не хочу использовать ии, поэтому стоит что то придумать
 
