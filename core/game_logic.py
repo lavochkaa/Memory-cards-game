@@ -74,7 +74,7 @@ class GameLogic:
 
         return True
 
-    # Ckeck values
+    # Check values
     def check_match(self):
         # Get value1, value2
         first_card, second_card = self.opened
