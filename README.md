@@ -1,3 +1,5 @@
+> 🚧 **update in development (pygame sntx)**
+
 # Memory Cards
 
 A simple memory (matching pairs) card game built with Python and CustomTkinter.
