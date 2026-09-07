@@ -124,6 +124,7 @@ class GameController:
         menu_start_btn = ctk.CTkButton(self.menu_frame, text="Start", command=self.join_room)
         menu_start_btn.grid(row=2, column=0, padx=MENU_BUTTON_SIZE, pady=MENU_BUTTON_SIZE, sticky="ew")
 
+    # Create waiting UI frame
     def _build_waiting_ui(self):
         # Config frame
         self.waiting_frame.grid_columnconfigure(0, weight=1)
