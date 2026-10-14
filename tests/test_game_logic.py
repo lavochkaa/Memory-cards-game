@@ -79,5 +79,17 @@ class GameLogicMatchTests(unittest.TestCase):
         self.assertEqual(game.current_player_id, 1)
 
 
+class GameLogicTimerTests(unittest.TestCase):
+    def test_tick_does_not_advance_after_timer_stops(self):
+        game = GameLogic(4, make_players())
+        game.generate_cards()
+        game.tick()
+
+        game.stop_timer()
+        game.tick()
+
+        self.assertEqual(game.seconds_passed, 1)
+
+
 if __name__ == "__main__":
     unittest.main()

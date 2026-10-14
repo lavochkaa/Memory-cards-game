@@ -122,7 +122,8 @@ class GameLogic:
 
     # Advance the clock by one second
     def tick(self):
-        self.seconds_passed += 1
+        if self.timer_running:
+            self.seconds_passed += 1
 
     # Stop the clock
     def stop_timer(self):
