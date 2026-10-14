@@ -35,8 +35,19 @@ class GameLogic:
 
     # Start to generate cards
     def generate_cards(self):
+        if self.size <= 0 or self.size % 2 != 0:
+            raise ValueError("Board size must be a positive even number")
+
         # Decompine to int
         pairs_count = (self.size ** 2) // 2
+
+        if pairs_count > len(EMOJIS):
+            raise ValueError("Board size exceeds the available card pairs")
+
+        self.cards.clear()
+        self.opened.clear()
+        self.matched_count = 0
+        self.current_player_id = 0
 
         # Create massive with NxN btn -> (N ** 2) // 2 pairs
         values_flat = (EMOJIS[:pairs_count]) * 2
