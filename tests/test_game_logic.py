@@ -1,7 +1,7 @@
 import unittest
 
 from core.game_logic import GameLogic
-from core.models import Player, User
+from core.models import Card, Player, User
 
 
 def make_players():
@@ -38,6 +38,45 @@ class GameLogicGenerateCardsTests(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             game.generate_cards()
+
+
+class GameLogicMatchTests(unittest.TestCase):
+    def test_matching_pair_scores_and_ends_a_completed_game(self):
+        players = make_players()
+        game = GameLogic(2, players)
+        first = Card("🍎", 0, 0)
+        second = Card("🍎", 0, 1)
+        game.cards = [first, second]
+        game.opened = [first, second]
+
+        result = game.check_match()
+
+        self.assertTrue(result["is_match"])
+        self.assertTrue(result["game_won"])
+        self.assertTrue(first.is_matched)
+        self.assertTrue(second.is_matched)
+        self.assertEqual(players[0].score, 10)
+        self.assertEqual(players[0].streak, 1)
+        self.assertEqual(game.current_player_id, 0)
+
+    def test_mismatched_pair_closes_cards_and_switches_turn(self):
+        players = make_players()
+        game = GameLogic(2, players)
+        first = Card("🍎", 0, 0)
+        second = Card("🍌", 0, 1)
+        first.is_open = True
+        second.is_open = True
+        players[0].streak = 2
+        game.cards = [first, second]
+        game.opened = [first, second]
+
+        result = game.check_match()
+
+        self.assertFalse(result["is_match"])
+        self.assertFalse(first.is_open)
+        self.assertFalse(second.is_open)
+        self.assertEqual(players[0].streak, 0)
+        self.assertEqual(game.current_player_id, 1)
 
 
 if __name__ == "__main__":
