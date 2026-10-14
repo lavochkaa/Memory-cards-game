@@ -19,6 +19,9 @@ class GameLogic:
         self.size = size
 
         # -- Players --
+        if len(players) != 2:
+            raise ValueError("Memory game requires exactly two players")
+
         self.players = players
 
         # -- Masives --

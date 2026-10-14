@@ -91,5 +91,17 @@ class GameLogicTimerTests(unittest.TestCase):
         self.assertEqual(game.seconds_passed, 1)
 
 
+class GameLogicPlayerValidationTests(unittest.TestCase):
+    def test_requires_exactly_two_players(self):
+        one_player = [Player(User("Alice"))]
+        three_players = make_players() + [Player(User("Cara"))]
+
+        with self.assertRaises(ValueError):
+            GameLogic(4, one_player)
+
+        with self.assertRaises(ValueError):
+            GameLogic(4, three_players)
+
+
 if __name__ == "__main__":
     unittest.main()
