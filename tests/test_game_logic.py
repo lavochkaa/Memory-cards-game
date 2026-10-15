@@ -17,6 +17,9 @@ class GameLogicGenerateCardsTests(unittest.TestCase):
         game.matched_count = 2
         game.seconds_passed = 19
         game.current_player_id = 1
+        game.players[0].clicks = 4
+        game.players[0].score = 20
+        game.players[0].streak = 2
 
         game.generate_cards()
 
@@ -25,6 +28,9 @@ class GameLogicGenerateCardsTests(unittest.TestCase):
         self.assertEqual(game.matched_count, 0)
         self.assertEqual(game.seconds_passed, 0)
         self.assertEqual(game.current_player_id, 0)
+        self.assertEqual(game.players[0].clicks, 0)
+        self.assertEqual(game.players[0].score, 0)
+        self.assertEqual(game.players[0].streak, 0)
         self.assertTrue(game.timer_running)
 
     def test_generate_cards_rejects_board_larger_than_available_pairs(self):

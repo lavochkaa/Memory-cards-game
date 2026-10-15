@@ -51,6 +51,10 @@ class GameLogic:
         self.opened.clear()
         self.matched_count = 0
         self.current_player_id = 0
+        for player in self.players:
+            player.clicks = 0
+            player.score = 0
+            player.streak = 0
 
         # Create massive with NxN btn -> (N ** 2) // 2 pairs
         values_flat = (EMOJIS[:pairs_count]) * 2
