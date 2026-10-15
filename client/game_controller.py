@@ -30,6 +30,7 @@ class GameController:
         # -- Values --
         self.game_logic = None
         self.timer_after_id = None
+        self.match_after_id = None
         self.selected_size = "4x4"
         self.buttons = []
         self.animation_after_ids = []
@@ -224,7 +225,7 @@ class GameController:
 
         # Check first_card == second_cars
         if len(self.game_logic.opened) == 2:
-            self.root.after(CHECK_DELAY, self._resolve_check)
+            self.match_after_id = self.root.after(CHECK_DELAY, self._resolve_check)
 
     # Animation flips
     def _animate_flip(self, idx, new_text, steps=FLIP_STEPS, delay=FLIP_DELAY):
@@ -258,6 +259,8 @@ class GameController:
 
     # Check to True
     def _resolve_check(self):
+        self.match_after_id = None
+
         # Get return in check_match
         result = self.game_logic.check_match()
         self._update_players_info()
@@ -297,6 +300,10 @@ class GameController:
         if self.timer_after_id:
             self.root.after_cancel(self.timer_after_id)
             self.timer_after_id = None
+
+        if self.match_after_id:
+            self.root.after_cancel(self.match_after_id)
+            self.match_after_id = None
 
         # For pid close
         for aid in self.animation_after_ids:
