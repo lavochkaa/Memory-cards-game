@@ -94,6 +94,9 @@ class GameLogic:
 
     # Check values
     def check_match(self):
+        if len(self.opened) != 2:
+            raise ValueError("Match check requires exactly two open cards")
+
         # Get value1, value2
         first_card, second_card = self.opened
         is_match = first_card.value == second_card.value

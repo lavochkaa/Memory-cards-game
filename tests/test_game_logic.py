@@ -47,6 +47,16 @@ class GameLogicGenerateCardsTests(unittest.TestCase):
 
 
 class GameLogicMatchTests(unittest.TestCase):
+    def test_check_match_requires_exactly_two_open_cards(self):
+        game = GameLogic(2, make_players())
+
+        for count in (0, 1, 3):
+            with self.subTest(open_card_count=count):
+                game.opened = [Card("🍎", 0, index) for index in range(count)]
+
+                with self.assertRaisesRegex(ValueError, "exactly two open cards"):
+                    game.check_match()
+
     def test_matching_pair_scores_and_ends_a_completed_game(self):
         players = make_players()
         game = GameLogic(2, players)
