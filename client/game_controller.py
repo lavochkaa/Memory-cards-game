@@ -283,16 +283,22 @@ class GameController:
         # if false or false -> Stop
         if not self.game_logic or not self.game_logic.timer_running:
             return
-        
-        # Get lact tick
-        self.game_logic.tick()
 
         # Get min and sec
         minutes, seconds = divmod(self.game_logic.seconds_passed, TIMER_MIN)
 
         # Change timer in the last time
         self.game_timer_lbl.configure(text=f"Time: {minutes}:{seconds:02d}")
-        self.timer_after_id = self.root.after(TIMER_DELAY, self._update_timer)
+        self.timer_after_id = self.root.after(TIMER_DELAY, self._tick_timer)
+
+    def _tick_timer(self):
+        self.timer_after_id = None
+
+        if not self.game_logic or not self.game_logic.timer_running:
+            return
+
+        self.game_logic.tick()
+        self._update_timer()
 
     # Stop all logics
     def _cancel_pending_callbacks(self):
