@@ -413,7 +413,7 @@ class GameController:
 
     # In login get username
     def login(self):
-        self.username = self.login_input_etr.get()
+        self.username = self.login_input_etr.get().strip()
 
         if self.username == "":
             self.username = "User1"

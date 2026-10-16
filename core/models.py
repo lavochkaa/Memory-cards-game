@@ -4,7 +4,9 @@ class User:
     # -- Inits --
     def __init__(self, username):
         # Get username
-        self.username = username
+        self.username = username.strip()
+        if not self.username:
+            raise ValueError("Username must not be blank")
 
         # -- Values --
         self.global_score = 0
