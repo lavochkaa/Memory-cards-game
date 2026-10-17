@@ -47,6 +47,15 @@ class GameLogicGenerateCardsTests(unittest.TestCase):
 
 
 class GameLogicMatchTests(unittest.TestCase):
+    def test_click_rejects_cards_outside_the_board(self):
+        game = GameLogic(2, make_players())
+        game.generate_cards()
+        foreign_card = Card("🍎", 9, 9)
+
+        self.assertFalse(game.on_click(foreign_card))
+        self.assertEqual(game.opened, [])
+        self.assertEqual(game.current_player().clicks, 0)
+
     def test_check_match_requires_exactly_two_open_cards(self):
         game = GameLogic(2, make_players())
 

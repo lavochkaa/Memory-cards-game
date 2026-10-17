@@ -80,7 +80,7 @@ class GameLogic:
     # Click logic
     def on_click(self, card):
         # Check oppend or matched
-        if not self.timer_running or card.is_open or card.is_matched or (len(self.opened) >= 2):
+        if card not in self.cards or not self.timer_running or card.is_open or card.is_matched or (len(self.opened) >= 2):
             return False
 
         # Do a flip and block
