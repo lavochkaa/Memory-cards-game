@@ -80,7 +80,7 @@ class GameLogic:
     # Click logic
     def on_click(self, card):
         # Check oppend or matched
-        if card.is_open or card.is_matched or (len(self.opened) >= 2):
+        if not self.timer_running or card.is_open or card.is_matched or (len(self.opened) >= 2):
             return False
 
         # Do a flip and block
@@ -119,6 +119,10 @@ class GameLogic:
             player.streak = 0
             self.switch_turn()
 
+        game_won = self.matched_count == len(self.cards)
+        if game_won:
+            self.stop_timer()
+
         # Clear opened cards and close
         self.opened.clear()
 
@@ -127,7 +131,7 @@ class GameLogic:
             "is_match": is_match,
             "first_card": first_card,
             "second_card": second_card,
-            "game_won": self.matched_count == len(self.cards),
+            "game_won": game_won,
         }
 
     # Advance the clock by one second

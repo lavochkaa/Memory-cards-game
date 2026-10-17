@@ -64,6 +64,7 @@ class GameLogicMatchTests(unittest.TestCase):
         second = Card("🍎", 0, 1)
         game.cards = [first, second]
         game.opened = [first, second]
+        game.timer_running = True
 
         result = game.check_match()
 
@@ -74,6 +75,11 @@ class GameLogicMatchTests(unittest.TestCase):
         self.assertEqual(players[0].score, 10)
         self.assertEqual(players[0].streak, 1)
         self.assertEqual(game.current_player_id, 0)
+        self.assertFalse(game.timer_running)
+
+        first.is_matched = False
+        first.is_open = False
+        self.assertFalse(game.on_click(first))
 
     def test_mismatched_pair_closes_cards_and_switches_turn(self):
         players = make_players()
