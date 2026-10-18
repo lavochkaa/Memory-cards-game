@@ -1,8 +1,6 @@
-> 🚧 **update in development (pygame sntx)**
-
 # Memory Cards
 
-A simple memory (matching pairs) card game built with Python and CustomTkinter.
+A local two-player memory game built with Python and CustomTkinter.
 
 ## How it works
 
@@ -16,14 +14,26 @@ A simple memory (matching pairs) card game built with Python and CustomTkinter.
 - Python 3
 - `customtkinter`
 
-Install dependencies:
+## Run locally
+
+Create an isolated environment and install the UI dependency:
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install customtkinter
 ```
 
-Run:
+Start the desktop application:
 ```bash
-python main.py
+python3 main.py
+```
+
+## Verification
+
+The game rules and callback scheduling have unit coverage that does not require a graphical display:
+
+```bash
+python3 -m unittest discover -s tests -v
 ```
 
 ## Project structure
@@ -94,12 +104,8 @@ Server will manage rooms later.
 - [ ] Better UI/UX overall
 - [ ] More game modes
 
-## More info
+## Project status
 
-I coocked this demo-game without AI (im prouding myself)
-
-UPD5: Максимум который смог выжать из клиента сделан. Завтра напишу сервер на шедевропитоне и выгружу. Большую часть багов я пофиксил, ну и саму логику поправил, думаю норм игрулька наподобие тех, что раньше были для игры на одном девайсе, ностальгия...
-
-P.S. я не дизайнер и с ним будут траблы. я не хочу использовать ии, поэтому стоит что то придумать
+The local two-player mode is implemented. Online multiplayer remains a planned extension; the `server/` and `client/server_client.py` modules are placeholders for that future work.
 
 ![alt text](images/image.png)
