@@ -38,6 +38,9 @@ class FakeGameLogic:
     def tick(self):
         self.seconds_passed += 1
 
+    def stop_timer(self):
+        self.timer_running = False
+
 
 class GameControllerCallbackTests(unittest.TestCase):
     def test_cancels_pending_match_check(self):
@@ -68,6 +71,24 @@ class GameControllerCallbackTests(unittest.TestCase):
 
         self.assertEqual(controller.game_timer_lbl.text, "Time: 0:01")
         self.assertEqual(controller.game_logic.seconds_passed, 1)
+
+    def test_returning_to_menu_cancels_game_callbacks_and_stops_timer(self):
+        controller = GameController.__new__(GameController)
+        controller.root = FakeRoot()
+        controller.timer_after_id = "timer"
+        controller.match_after_id = "match-check"
+        controller.animation_after_ids = ["flip-animation"]
+        game_logic = FakeGameLogic()
+        controller.game_logic = game_logic
+        controller.menu_was_shown = False
+        controller._show_menu = lambda: setattr(controller, "menu_was_shown", True)
+
+        controller.back_to_menu()
+
+        self.assertEqual(controller.root.cancelled_callbacks, ["timer", "match-check", "flip-animation"])
+        self.assertFalse(game_logic.timer_running)
+        self.assertIsNone(controller.game_logic)
+        self.assertTrue(controller.menu_was_shown)
 
 
 if __name__ == "__main__":
