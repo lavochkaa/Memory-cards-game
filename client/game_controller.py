@@ -31,9 +31,11 @@ class GameController:
         self.game_logic = None
         self.timer_after_id = None
         self.match_after_id = None
+        self.input_unlock_after_id = None
         self.selected_size = "4x4"
         self.buttons = []
         self.animation_after_ids = []
+        self.input_locked = False
 
         # -- Atributs --
         self._build_login_ui()
@@ -46,6 +48,7 @@ class GameController:
     def start_game(self):
         # Clear pids
         self._cancel_pending_callbacks()
+        self.input_locked = False
 
         # Size to int value
         size = int(self.selected_size.split('x')[0])
@@ -208,6 +211,9 @@ class GameController:
 
     # Check logic in GameLogic
     def on_card_click(self, row, col):
+        if self.input_locked:
+            return
+
         # Indexing
         idx = self._card_index(row, col)
         card = self.game_logic.cards[idx]
@@ -225,6 +231,7 @@ class GameController:
 
         # Check first_card == second_cars
         if len(self.game_logic.opened) == 2:
+            self.input_locked = True
             self.match_after_id = self.root.after(CHECK_DELAY, self._resolve_check)
 
     # Animation flips
@@ -274,6 +281,13 @@ class GameController:
             else:
                 self._animate_flip(idx, "?")
 
+        if result["is_match"]:
+            self.input_locked = False
+        else:
+            self.input_unlock_after_id = self.root.after(
+                FLIP_DELAY * (FLIP_STEPS + 2), self._unlock_input
+            )
+
         # Check to win
         if result["game_won"]:
             self.finish_game()
@@ -300,6 +314,10 @@ class GameController:
         self.game_logic.tick()
         self._update_timer()
 
+    def _unlock_input(self):
+        self.input_unlock_after_id = None
+        self.input_locked = False
+
     # Stop all logics
     def _cancel_pending_callbacks(self):
         # Check IDs
@@ -310,6 +328,12 @@ class GameController:
         if self.match_after_id:
             self.root.after_cancel(self.match_after_id)
             self.match_after_id = None
+
+        if self.input_unlock_after_id:
+            self.root.after_cancel(self.input_unlock_after_id)
+            self.input_unlock_after_id = None
+
+        self.input_locked = False
 
         # For pid close
         for aid in self.animation_after_ids:

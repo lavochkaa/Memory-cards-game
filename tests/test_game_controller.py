@@ -5,7 +5,8 @@ import unittest
 
 sys.modules.setdefault("customtkinter", types.SimpleNamespace())
 
-from client.game_controller import GameController
+from client.game_controller import CHECK_DELAY, FLIP_DELAY, FLIP_STEPS, GameController
+from core.models import Card
 
 
 class FakeRoot:
@@ -42,12 +43,72 @@ class FakeGameLogic:
         self.timer_running = False
 
 
+class FakeClickGameLogic:
+    def __init__(self):
+        self.size = 2
+        self.cards = [Card("🍎", 0, 0)]
+        self.opened = []
+        self.click_attempts = 0
+
+    def on_click(self, card):
+        self.click_attempts += 1
+        self.opened.append(card)
+        return True
+
+
+class FakeMismatchGameLogic:
+    def __init__(self):
+        self.size = 2
+        self.first_card = Card("🍎", 0, 0)
+        self.second_card = Card("🍌", 0, 1)
+
+    def check_match(self):
+        return {
+            "is_match": False,
+            "first_card": self.first_card,
+            "second_card": self.second_card,
+            "game_won": False,
+        }
+
+
 class GameControllerCallbackTests(unittest.TestCase):
+    def test_ignores_card_clicks_while_pair_resolution_is_locked(self):
+        controller = GameController.__new__(GameController)
+        controller.game_logic = FakeClickGameLogic()
+        controller.input_locked = True
+
+        controller.on_card_click(0, 0)
+
+        self.assertEqual(controller.game_logic.click_attempts, 0)
+
+    def test_mismatched_pair_keeps_input_locked_until_flip_back_finishes(self):
+        controller = GameController.__new__(GameController)
+        controller.root = FakeRoot()
+        controller.game_logic = FakeMismatchGameLogic()
+        controller.match_after_id = "match-check"
+        controller.input_locked = True
+        controller.buttons = [object(), object()]
+        animated_cards = []
+        controller._update_players_info = lambda: None
+        controller._animate_flip = lambda index, text: animated_cards.append((index, text))
+
+        controller._resolve_check()
+
+        self.assertTrue(controller.input_locked)
+        self.assertEqual(animated_cards, [(0, "?"), (1, "?")])
+        self.assertEqual(controller.root.scheduled_callbacks[0][1], FLIP_DELAY * (FLIP_STEPS + 2))
+
+        controller.root.scheduled_callbacks[0][2]()
+
+        self.assertFalse(controller.input_locked)
+
     def test_cancels_pending_match_check(self):
         controller = GameController.__new__(GameController)
         controller.root = FakeRoot()
         controller.timer_after_id = None
         controller.match_after_id = "match-check"
+        controller.input_unlock_after_id = None
+        controller.input_locked = True
         controller.animation_after_ids = []
 
         controller._cancel_pending_callbacks()
@@ -77,6 +138,8 @@ class GameControllerCallbackTests(unittest.TestCase):
         controller.root = FakeRoot()
         controller.timer_after_id = "timer"
         controller.match_after_id = "match-check"
+        controller.input_unlock_after_id = "input-unlock"
+        controller.input_locked = True
         controller.animation_after_ids = ["flip-animation"]
         game_logic = FakeGameLogic()
         controller.game_logic = game_logic
@@ -85,9 +148,13 @@ class GameControllerCallbackTests(unittest.TestCase):
 
         controller.back_to_menu()
 
-        self.assertEqual(controller.root.cancelled_callbacks, ["timer", "match-check", "flip-animation"])
+        self.assertEqual(
+            controller.root.cancelled_callbacks,
+            ["timer", "match-check", "input-unlock", "flip-animation"],
+        )
         self.assertFalse(game_logic.timer_running)
         self.assertIsNone(controller.game_logic)
+        self.assertFalse(controller.input_locked)
         self.assertTrue(controller.menu_was_shown)
 
 
