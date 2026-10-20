@@ -32,6 +32,7 @@ class GameController:
         self.timer_after_id = None
         self.match_after_id = None
         self.input_unlock_after_id = None
+        self.waiting_after_id = None
         self.selected_size = "4x4"
         self.buttons = []
         self.animation_after_ids = []
@@ -333,6 +334,10 @@ class GameController:
             self.root.after_cancel(self.input_unlock_after_id)
             self.input_unlock_after_id = None
 
+        if self.waiting_after_id:
+            self.root.after_cancel(self.waiting_after_id)
+            self.waiting_after_id = None
+
         self.input_locked = False
 
         # For pid close
@@ -431,9 +436,16 @@ class GameController:
 
     # Command button to join in waiting room
     def join_room(self):
+        if self.waiting_after_id is not None:
+            return
+
         self._show_waiting()
         # TODO - server GET
-        self.root.after(TIMER_DELAY * 3, self.start_game)
+        self.waiting_after_id = self.root.after(TIMER_DELAY * 3, self._start_game_after_wait)
+
+    def _start_game_after_wait(self):
+        self.waiting_after_id = None
+        self.start_game()
 
     # In login get username
     def login(self):

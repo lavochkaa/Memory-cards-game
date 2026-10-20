@@ -72,6 +72,22 @@ class FakeMismatchGameLogic:
 
 
 class GameControllerCallbackTests(unittest.TestCase):
+    def test_join_room_schedules_only_one_game_start(self):
+        controller = GameController.__new__(GameController)
+        controller.root = FakeRoot()
+        controller.waiting_after_id = None
+        controller._show_waiting = lambda: None
+        starts = []
+        controller.start_game = lambda: starts.append(True)
+
+        controller.join_room()
+        controller.join_room()
+
+        self.assertEqual(len(controller.root.scheduled_callbacks), 1)
+        controller.root.scheduled_callbacks[0][2]()
+        self.assertEqual(starts, [True])
+        self.assertIsNone(controller.waiting_after_id)
+
     def test_ignores_card_clicks_while_pair_resolution_is_locked(self):
         controller = GameController.__new__(GameController)
         controller.game_logic = FakeClickGameLogic()
@@ -108,6 +124,7 @@ class GameControllerCallbackTests(unittest.TestCase):
         controller.timer_after_id = None
         controller.match_after_id = "match-check"
         controller.input_unlock_after_id = None
+        controller.waiting_after_id = None
         controller.input_locked = True
         controller.animation_after_ids = []
 
@@ -139,6 +156,7 @@ class GameControllerCallbackTests(unittest.TestCase):
         controller.timer_after_id = "timer"
         controller.match_after_id = "match-check"
         controller.input_unlock_after_id = "input-unlock"
+        controller.waiting_after_id = "waiting-start"
         controller.input_locked = True
         controller.animation_after_ids = ["flip-animation"]
         game_logic = FakeGameLogic()
@@ -150,7 +168,7 @@ class GameControllerCallbackTests(unittest.TestCase):
 
         self.assertEqual(
             controller.root.cancelled_callbacks,
-            ["timer", "match-check", "input-unlock", "flip-animation"],
+            ["timer", "match-check", "input-unlock", "waiting-start", "flip-animation"],
         )
         self.assertFalse(game_logic.timer_running)
         self.assertIsNone(controller.game_logic)
