@@ -110,6 +110,28 @@ class GameLogicMatchTests(unittest.TestCase):
         self.assertEqual(game.current_player_id, 1)
 
 
+class GameLogicWinnerTests(unittest.TestCase):
+    def test_player_with_higher_score_wins(self):
+        for first_score, second_score, expected_index in (
+            (30, 10, 0),
+            (10, 30, 1),
+        ):
+            with self.subTest(first_score=first_score, second_score=second_score):
+                players = make_players()
+                players[0].score = first_score
+                players[1].score = second_score
+                game = GameLogic(2, players)
+
+                self.assertIs(game.get_winner(), players[expected_index])
+
+    def test_equal_scores_are_a_draw(self):
+        players = make_players()
+        players[0].score = players[1].score = 30
+        game = GameLogic(2, players)
+
+        self.assertIsNone(game.get_winner())
+
+
 class GameLogicTimerTests(unittest.TestCase):
     def test_tick_does_not_advance_after_timer_stops(self):
         game = GameLogic(4, make_players())
