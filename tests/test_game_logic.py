@@ -90,6 +90,32 @@ class GameLogicMatchTests(unittest.TestCase):
         first.is_open = False
         self.assertFalse(game.on_click(first))
 
+    def test_consecutive_matches_grow_streak_and_keep_the_turn(self):
+        players = make_players()
+        game = GameLogic(2, players)
+        first_pair = [Card("🍎", 0, 0), Card("🍎", 0, 1)]
+        second_pair = [Card("🍌", 1, 0), Card("🍌", 1, 1)]
+        game.cards = first_pair + second_pair
+        game.timer_running = True
+
+        game.opened = list(first_pair)
+        first_result = game.check_match()
+
+        self.assertFalse(first_result["game_won"])
+        self.assertEqual(players[0].score, 10)
+        self.assertEqual(players[0].streak, 1)
+        self.assertEqual(game.current_player_id, 0)
+        self.assertTrue(game.timer_running)
+
+        game.opened = list(second_pair)
+        second_result = game.check_match()
+
+        self.assertTrue(second_result["game_won"])
+        self.assertEqual(players[0].score, 30)
+        self.assertEqual(players[0].streak, 2)
+        self.assertEqual(game.current_player_id, 0)
+        self.assertFalse(game.timer_running)
+
     def test_mismatched_pair_closes_cards_and_switches_turn(self):
         players = make_players()
         game = GameLogic(2, players)
