@@ -56,6 +56,19 @@ class GameLogicMatchTests(unittest.TestCase):
         self.assertEqual(game.opened, [])
         self.assertEqual(game.current_player().clicks, 0)
 
+    def test_click_rejects_a_third_card_while_a_pair_is_open(self):
+        game = GameLogic(2, make_players())
+        game.generate_cards()
+        first, second, third = game.cards[:3]
+
+        self.assertTrue(game.on_click(first))
+        self.assertTrue(game.on_click(second))
+        self.assertFalse(game.on_click(third))
+
+        self.assertEqual(game.opened, [first, second])
+        self.assertEqual(game.current_player().clicks, 2)
+        self.assertFalse(third.is_open)
+
     def test_check_match_requires_exactly_two_open_cards(self):
         game = GameLogic(2, make_players())
 
