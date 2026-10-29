@@ -185,15 +185,25 @@ class GameController:
         self.game_timer_lbl.grid(row=size, column=0, columnspan=size, pady=(10, 0))
 
         # Turn label
-        self.game_current_turn_lbl = ctk.CTkLabel(self.board_frame, text=f"Turn: {player1.user.username}")
+        self.game_current_turn_lbl = ctk.CTkLabel(
+            self.board_frame, text=f"Turn: {player1.user.username}", wraplength=550
+        )
         self.game_current_turn_lbl.grid(row=size + 1, column=0, columnspan=size, pady=(10, 0))
 
         # User1 status
-        self.game_player1_lbl = ctk.CTkLabel(self.left_user_frame, text=f"{player1.user.username}\n- Score: 0\n- Streak: 0\n- Clicks: 0")
+        self.game_player1_lbl = ctk.CTkLabel(
+            self.left_user_frame,
+            text=f"{player1.user.username}\n- Score: 0\n- Streak: 0\n- Clicks: 0",
+            wraplength=120,
+        )
         self.game_player1_lbl.pack(padx=15, pady=15)
 
         # User2 status
-        self.game_player2_lbl = ctk.CTkLabel(self.right_user_frame, text=f"{player2.user.username}\n- Score: 0\n- Streak: 0\n- Clicks: 0")
+        self.game_player2_lbl = ctk.CTkLabel(
+            self.right_user_frame,
+            text=f"{player2.user.username}\n- Score: 0\n- Streak: 0\n- Clicks: 0",
+            wraplength=120,
+        )
         self.game_player2_lbl.pack(padx=15, pady=15)
 
         # Back button
@@ -203,7 +213,9 @@ class GameController:
     # Create finish UI
     def _build_finish_ui(self):
         # -- Labels --
-        self.finish_main_lbl = ctk.CTkLabel(self.finish_frame, text="", justify="center")
+        self.finish_main_lbl = ctk.CTkLabel(
+            self.finish_frame, text="", justify="center", wraplength=700
+        )
         self.finish_main_lbl.grid(row=0, column=0, padx=LABEL_SIZE, pady=LABEL_SIZE)
 
         # -- Buttons --
